@@ -30,7 +30,7 @@ _main:
         push r12
         push rbx
 
-        mov  rdi, 3200  ; Malloc for 200 16-bit numbers - will use this like a hash map
+        mov  rdi, 32176  ; Malloc for 2010 (input arr max) 16 but nums
         call _malloc
 
         ; check if the malloc failed
@@ -39,14 +39,14 @@ _main:
         mov  rbx, rax
 
 
-        mov [rbx], dword 0;
-        mov r12, dword 200
+        mov [rbx], dword 5;
+        mov r12, dword 2011
 
         mov r15, rbx   ; keep address to front of array in r15
 _init_hash_loop:
 
-        add rbx, 2
-        mov [rbx], dword 12
+        add rbx, 16
+        mov [rbx], dword 5
 
         dec  r12
         jnz  _init_hash_loop
@@ -55,25 +55,23 @@ _init_hash_loop:
         mov r14, arr
 
 _count_nums_loop:  ; Populate our hash in r15 with counts of each item in the input array
+        xor r13, r13
         mov r13, r15
-        add r13, r14
-        add r13, r14
-        ;mov [r13], dword 1  ; assume no dups in the input array
 
-        add r14, 4
-        dec r12
-        jnz _count_nums_loop
+        xor rax, rax
 
-        mov r12, dword 200 ; Reset next iterator for counting loop
-        mov r14, r15
+        mov rax, [r14]
+        mov rdx, 16
+        mul rdx
 
-_debug_loop:
+        mov r8, rax
+        add r13, rax
 
         push    rax
         push    rcx
 
         lea     rdi, [format]
-        mov     rsi, [r14]
+        mov     rsi, r13
         xor     rax, rax
 
         call    _printf
@@ -81,7 +79,31 @@ _debug_loop:
         pop     rcx
         pop     rax
 
-        add r14, 2
+        ;mov [r13], 1  ; assume no dups in the input array
+
+
+        add r14, 4
+        dec r12
+        jnz _count_nums_loop
+
+        mov r12, dword 2011 ; Reset next iterator for counting loop
+        mov r14, r15
+
+_debug_loop:
+
+        ; push    rax
+        ; push    rcx
+
+        ; lea     rdi, [format]
+        ; mov     rsi, [r14]
+        ; xor     rax, rax
+
+        ; call    _printf
+
+        ; pop     rcx
+        ; pop     rax
+
+        add r14, 16
         dec r12
         jnz _debug_loop
 
@@ -107,7 +129,7 @@ fail_exit:
 
 format:
 default rel
-  db "%d", 10,
+  db "%d", 10, 0
   
 arr:
 default rel

@@ -3,13 +3,6 @@ DEFAULT rel ; RIP-relative addressing by default
 
 
 global _main
-;
-; Basic OS X calls to glibc
-;
-; compile with:
-; nasm -g -f macho64 malloc64.asm
-; gcc -o a.out malloc64.o
-;
 
 ; glibc stuff
 extern _puts, _printf, _malloc, _free
@@ -46,7 +39,7 @@ _main:
 _init_hash_loop:
 
         add rbx, 16
-        mov [rbx], dword 5
+        mov [rbx], dword 0
 
         dec  r12
         jnz  _init_hash_loop
@@ -58,54 +51,53 @@ _count_nums_loop:  ; Populate our hash in r15 with counts of each item in the in
         xor r13, r13
         mov r13, r15
 
-        xor rax, rax
+        xor r10, r10
 
-        mov rax, [r14]
-        mov rdx, 16
-        mul rdx
+        mov r10, [r14]
+        imul r10, 16
+        and  r10, 0x00FFFF
 
-        mov r8, rax
-        add r13, rax
-
-        push    rax
-        push    rcx
-
-        lea     rdi, [format]
-        mov     rsi, r13
-        xor     rax, rax
-
-        call    _printf
-
-        pop     rcx
-        pop     rax
-
-        ;mov [r13], 1  ; assume no dups in the input array
-
+        add r13, r10
+        mov [r13], dword 1  ; assume no dups in the input array
 
         add r14, 4
         dec r12
         jnz _count_nums_loop
 
-        mov r12, dword 2011 ; Reset next iterator for counting loop
-        mov r14, r15
+        mov r12, dword 200 ; Reset next iterator for counting loop
+        mov r14, arr
 
-_debug_loop:
+_find_triplet_loop:
+        mov r13, 200
+        mov r11, r14
+        add r11, 4
+        push r11
 
-        ; push    rax
-        ; push    rcx
+        cmp r12, 2
+        ja _inner_loop
 
-        ; lea     rdi, [format]
-        ; mov     rsi, [r14]
-        ; xor     rax, rax
+        jmp _finish_loop
 
-        ; call    _printf
+  
+_inner_loop:
+     ; sum two nums
+     pop r11
+     mov r8, [r11]
+     add r8, [r14]
 
-        ; pop     rcx
-        ; pop     rax
+     add r11, 4
+     push r11
 
-        add r14, 16
+     dec r13
+     jnz _inner_loop
+
+     pop r11
+     jmp _finish_loop
+
+_finish_loop:
+        add r14, 4
         dec r12
-        jnz _debug_loop
+        jnz _find_triplet_loop
 
         jmp complete
 
@@ -113,6 +105,18 @@ complete:
         ; free the malloc'd memory
         mov  rdi, r15
         call _free
+
+        push    rax
+        push    rcx
+
+        lea     rdi, [format]
+        mov     rsi, 200
+        xor     rax, rax
+
+        call    _printf         ; Print the answer
+
+        pop     rcx
+        pop     rax
 
         xor rax, rax
         pop rbx
